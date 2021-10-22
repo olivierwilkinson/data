@@ -119,7 +119,7 @@ function createModelApi<
         )
       }
 
-      return firstResult
+      return firstResult as Entity<any, any>
     },
     findMany(query) {
       const results = executeQuery(modelName, primaryKey, query, db)
@@ -156,7 +156,7 @@ function createModelApi<
           )
         }
 
-        return null
+        return null as any
       }
 
       const nextRecord = updateEntity(prevRecord, query.data, definition)
@@ -198,7 +198,7 @@ function createModelApi<
           )
         }
 
-        return null
+        return null as any
       }
 
       records.forEach((prevRecord) => {
@@ -243,7 +243,7 @@ function createModelApi<
           )
         }
 
-        return null
+        return null as any
       }
 
       db.delete(modelName, record[record[PRIMARY_KEY]] as string)
@@ -264,7 +264,7 @@ function createModelApi<
           )
         }
 
-        return null
+        return null as any
       }
 
       records.forEach((record) => {

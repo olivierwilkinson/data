@@ -85,6 +85,11 @@ export type InitialValues<
   ModelName extends keyof Dictionary,
 > = Partial<Value<Dictionary[ModelName], Dictionary>>
 
+export type StrictQueryReturnType<
+  QueryType extends QuerySelector<any>,
+  ValueType extends unknown,
+> = QueryType['strict'] extends true ? ValueType : ValueType | null
+
 export interface ModelAPI<
   Dictionary extends ModelDictionary,
   ModelName extends keyof Dictionary,
@@ -102,9 +107,11 @@ export interface ModelAPI<
   /**
    * Find a first entity matching the query.
    */
-  findFirst(
-    query: QuerySelector<InitialValues<Dictionary, ModelName>>,
-  ): Entity<Dictionary, ModelName> | null
+  findFirst<
+    QueryType extends QuerySelector<InitialValues<Dictionary, ModelName>>,
+  >(
+    query: QueryType,
+  ): StrictQueryReturnType<QueryType, Entity<Dictionary, ModelName>>
   /**
    * Find multiple entities.
    */
@@ -119,31 +126,37 @@ export interface ModelAPI<
   /**
    * Update a single entity with the next data.
    */
-  update(
-    query: QuerySelector<InitialValues<Dictionary, ModelName>> & {
+  update<
+    QueryType extends QuerySelector<InitialValues<Dictionary, ModelName>> & {
       data: Partial<UpdateManyValue<Dictionary[ModelName], Dictionary>>
     },
-  ): Entity<Dictionary, ModelName> | null
+  >(
+    query: QueryType,
+  ): StrictQueryReturnType<QueryType, Entity<Dictionary, ModelName>>
   /**
    * Update many entities with the next data.
    */
-  updateMany(
-    query: QuerySelector<InitialValues<Dictionary, ModelName>> & {
+  updateMany<
+    QueryType extends QuerySelector<InitialValues<Dictionary, ModelName>> & {
       data: Partial<UpdateManyValue<Dictionary[ModelName], Dictionary>>
     },
-  ): Entity<Dictionary, ModelName>[] | null
+  >(
+    query: QueryType,
+  ): StrictQueryReturnType<QueryType, Entity<Dictionary, ModelName>[]>
   /**
    * Delete a single entity.
    */
-  delete(
-    query: QuerySelector<InitialValues<Dictionary, ModelName>>,
-  ): Entity<Dictionary, ModelName> | null
+  delete<QueryType extends QuerySelector<InitialValues<Dictionary, ModelName>>>(
+    query: QueryType,
+  ): StrictQueryReturnType<QueryType, Entity<Dictionary, ModelName>>
   /**
    * Delete multiple entities.
    */
-  deleteMany(
-    query: QuerySelector<InitialValues<Dictionary, ModelName>>,
-  ): Entity<Dictionary, ModelName>[] | null
+  deleteMany<
+    QueryType extends QuerySelector<InitialValues<Dictionary, ModelName>>,
+  >(
+    query: QueryType,
+  ): StrictQueryReturnType<QueryType, Entity<Dictionary, ModelName>[]>
   /**
    * Generate request handlers of the given type based on the model definition.
    */

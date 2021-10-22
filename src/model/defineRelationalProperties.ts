@@ -1,6 +1,7 @@
 import { debug } from 'debug'
 import get from 'lodash/get'
 import { invariant } from 'outvariant'
+import { NullableRelation } from '../nullable'
 import { Database } from '../db/Database'
 import { Entity, ENTITY_TYPE, ModelDictionary, Value } from '../glossary'
 import { RelationsList } from '../relations/Relation'
@@ -39,8 +40,10 @@ export function defineRelationalProperties(
 
     relation.apply(entity, propertyPath, dictionary, db)
 
-    if (references) {
+    if (typeof references !== 'undefined') {
       relation.resolveWith(entity, references)
+    } else if (relation instanceof NullableRelation) {
+      relation.resolveWith(entity, null)
     }
   }
 }

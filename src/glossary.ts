@@ -1,5 +1,11 @@
 import { GraphQLSchema } from 'graphql'
 import { GraphQLHandler, RestHandler } from 'msw'
+import {
+  NullableManyOf,
+  NullableOneOf,
+  NullableProperty,
+  NullableRelation,
+} from './nullable'
 import { PrimaryKey } from './primaryKey'
 import {
   BulkQueryOptions,
@@ -19,16 +25,20 @@ export type ModelDefinition = Record<string, ModelDefinitionValue>
 
 export type ModelDefinitionValue =
   | ModelValueTypeGetter
+  | NullableProperty<any>
   | PrimaryKey<any>
   | OneOf<any>
   | ManyOf<any>
+  | NullableRelation<any, any, any>
   | NestedModelDefinition
 
 export type NestedModelDefinition = {
   [propertyName: string]:
     | ModelValueTypeGetter
+    | NullableProperty<any>
     | OneOf<any>
     | ManyOf<any>
+    | NullableRelation<any, any, any>
     | NestedModelDefinition
 }
 
@@ -188,13 +198,24 @@ export type Value<
   Target extends AnyObject,
   Dictionary extends ModelDictionary,
 > = {
-  [Key in keyof Target]: Target[Key] extends PrimaryKey<any>
+  [Key in keyof Target]: Target[Key] extends
+    | PrimaryKey<any>
+    | NullableProperty<any>
     ? ReturnType<Target[Key]['getValue']>
-    : // Extract value type from relations.
+    : // Extract value type from OneOf relations
     Target[Key] extends OneOf<infer ModelName>
-    ? PublicEntity<Dictionary, ModelName>
-    : Target[Key] extends ManyOf<infer ModelName>
-    ? PublicEntity<Dictionary, ModelName>[]
+    ? ModelName extends keyof Dictionary
+      ? PublicEntity<Dictionary, ModelName>
+      : Target[Key] extends NullableOneOf<infer ModelName>
+      ? PublicEntity<Dictionary, ModelName> | null
+      : never
+    : // Extract value type from ManyOf relations
+    Target[Key] extends ManyOf<infer ModelName>
+    ? ModelName extends keyof Dictionary
+      ? PublicEntity<Dictionary, ModelName>[]
+      : Target[Key] extends NullableManyOf<infer ModelName>
+      ? PublicEntity<Dictionary, ModelName>[] | null
+      : never
     : // Account for primitive value getters because
     // native constructors (i.e. StringConstructor) satisfy
     // the "AnyObject" predicate below.
